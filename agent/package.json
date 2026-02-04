@@ -1,0 +1,30 @@
+{
+  "name": "sentineldao-agent",
+  "version": "1.0.0",
+  "description": "Autonomous agent for SentinelDAO treasury policy execution",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["dao", "treasury", "agent", "automation"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "viem": "^2.21.54",
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.1",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
