@@ -7,7 +7,7 @@ import { useEnsAddress, useEnsAvatar, useEnsName, useEnsText } from "wagmi";
 import { mainnet } from "wagmi/chains";
 
 type EnsRecipientResolverProps = {
-  onAddRecipient: (address: `0x${string}`) => void;
+  onAddRecipient: (address: `0x${string}`, ensName?: string) => void;
   connectedAddress?: `0x${string}`;
 };
 
@@ -92,8 +92,8 @@ export const EnsRecipientResolver = ({ onAddRecipient, connectedAddress }: EnsRe
   };
 
   const handleAddToRecipients = () => {
-    if (resolvedAddress) {
-      onAddRecipient(resolvedAddress);
+    if (resolvedAddress && ensInput) {
+      onAddRecipient(resolvedAddress, ensInput);
       // Clear the form
       setEnsInput("");
       setResolvedAddress(null);

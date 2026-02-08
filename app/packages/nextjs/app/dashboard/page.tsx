@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import type { NextPage } from "next";
 import { formatUnits, parseUnits } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, useEnsName } from "wagmi";
+import { mainnet } from "wagmi/chains";
 import { useScaffoldReadContract, useScaffoldWriteContract, useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
 import { EnsRecipientResolver } from "~~/components/ens/EnsRecipientResolver";
@@ -17,6 +18,7 @@ const SentinelDashboard: NextPage = () => {
 
   // Policy creation form state
   const [recipients, setRecipients] = useState("");
+  const [recipientChips, setRecipientChips] = useState<Array<{ address: string; ensName?: string }>>([]);
   const [amounts, setAmounts] = useState("");
   const [intervalSeconds, setIntervalSeconds] = useState("0");
   const [startTime, setStartTime] = useState("");
@@ -148,29 +150,41 @@ const SentinelDashboard: NextPage = () => {
   };
 
   // Helper function to add ENS-resolved address to recipients
-  const addRecipient = (address: `0x${string}`) => {
-    const currentRecipients = recipients
-      .split(",")
-      .map(r => r.trim().toLowerCase())
-      .filter(r => r.length > 0);
-
+  const addRecipient = (address: `0x${string}`, ensName?: string) => {
     // Check for duplicates (case-insensitive)
-    if (currentRecipients.includes(address.toLowerCase())) {
+    const isDuplicate = recipientChips.some(
+      chip => chip.address.toLowerCase() === address.toLowerCase()
+    );
+
+    if (isDuplicate) {
       console.log("Address already in recipients list");
       return;
     }
 
-    // Add to recipients
-    if (recipients.trim() === "") {
-      setRecipients(address);
-    } else {
-      setRecipients(recipients + ", " + address);
+    // Add to recipient chips
+    setRecipientChips([...recipientChips, { address, ensName }]);
+  };
+
+  // Helper to remove a recipient chip
+  const removeRecipient = (address: string) => {
+    setRecipientChips(recipientChips.filter(chip => chip.address.toLowerCase() !== address.toLowerCase()));
+  };
+
+  // Helper to add recipient from manual input
+  const handleAddRecipientFromInput = () => {
+    const trimmedInput = recipients.trim();
+    if (!trimmedInput) return;
+
+    // Check if it's a valid Ethereum address
+    if (trimmedInput.match(/^0x[a-fA-F0-9]{40}$/)) {
+      addRecipient(trimmedInput as `0x${string}`);
+      setRecipients(""); // Clear input
     }
   };
 
   const handleCreatePolicy = async () => {
     try {
-      const recipientsArray = recipients.split(",").map(r => r.trim());
+      const recipientsArray = recipientChips.map(chip => chip.address);
       const amountsArray = amounts.split(",").map(a => parseUnits(a.trim(), 6));
       const totalAmount = amountsArray.reduce((acc, curr) => acc + curr, 0n);
       const maxPer = maxPerExecution ? parseUnits(maxPerExecution, 6) : totalAmount;
@@ -181,6 +195,7 @@ const SentinelDashboard: NextPage = () => {
       });
 
       // Reset form
+      setRecipientChips([]);
       setRecipients("");
       setAmounts("");
       setIntervalSeconds("0");
@@ -402,27 +417,67 @@ const SentinelDashboard: NextPage = () => {
             {isOwner && (
               <div className="p-8 border-2 border-orange-500/30 rounded-lg bg-orange-500/5">
                 <h3 className="text-3xl font-bold mb-8 text-orange-500">Create Policy</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text text-gray-400 text-lg flex items-center gap-2">
-                        Recipients
-                        <div className="tooltip tooltip-right" data-tip="Enter wallet addresses separated by commas (e.g., 0x123..., 0x456...)">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current text-orange-500 cursor-help">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
+                
+                {/* Recipients Section with Chips */}
+                <div className="mb-6">
+                  <label className="label">
+                    <span className="label-text text-gray-400 text-lg flex items-center gap-2">
+                      Recipients
+                      <div className="tooltip tooltip-right" data-tip="Add wallet addresses manually or use ENS resolver above">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current text-orange-500 cursor-help">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                      </div>
+                    </span>
+                  </label>
+                  
+                  {/* Recipient Chips Display */}
+                  {recipientChips.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4 p-4 bg-black border border-gray-700 rounded">
+                      {recipientChips.map((chip, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 bg-orange-500/20 border border-orange-500/50 rounded px-3 py-2"
+                        >
+                          <span className="text-white font-mono text-sm">
+                            {chip.ensName || `${chip.address.slice(0, 6)}...${chip.address.slice(-4)}`}
+                          </span>
+                          <button
+                            onClick={() => removeRecipient(chip.address)}
+                            className="text-orange-500 hover:text-orange-300 font-bold"
+                          >
+                            ×
+                          </button>
                         </div>
-                      </span>
-                    </label>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Manual Address Input */}
+                  <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="0x123..., 0x456..."
-                      className="input input-bordered bg-black border-gray-700 text-white text-lg"
+                      placeholder="0x123..."
+                      className="input input-bordered bg-black border-gray-700 text-white text-lg flex-grow"
                       value={recipients}
                       onChange={e => setRecipients(e.target.value)}
+                      onKeyPress={e => {
+                        if (e.key === 'Enter') {
+                          handleAddRecipientFromInput();
+                        }
+                      }}
                     />
+                    <button
+                      onClick={handleAddRecipientFromInput}
+                      className="btn bg-gray-700 hover:bg-gray-600 border-none text-white"
+                    >
+                      Add
+                    </button>
                   </div>
+                </div>
 
+                {/* Rest of Form in 2 Columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text text-gray-400 text-lg flex items-center gap-2">
@@ -440,6 +495,20 @@ const SentinelDashboard: NextPage = () => {
                       className="input input-bordered bg-black border-gray-700 text-white text-lg"
                       value={amounts}
                       onChange={e => setAmounts(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text text-gray-400 text-lg">Start Time</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      className="input input-bordered bg-black border-gray-700 text-white text-lg"
+                      onChange={e => {
+                        const date = new Date(e.target.value);
+                        setStartTime(Math.floor(date.getTime() / 1000).toString());
+                      }}
                     />
                   </div>
 
@@ -485,20 +554,6 @@ const SentinelDashboard: NextPage = () => {
 
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text text-gray-400 text-lg">Start Time</span>
-                    </label>
-                    <input
-                      type="datetime-local"
-                      className="input input-bordered bg-black border-gray-700 text-white text-lg"
-                      onChange={e => {
-                        const date = new Date(e.target.value);
-                        setStartTime(Math.floor(date.getTime() / 1000).toString());
-                      }}
-                    />
-                  </div>
-
-                  <div className="form-control">
-                    <label className="label">
                       <span className="label-text text-gray-400 text-lg">Max Per Execution (USDC, optional)</span>
                     </label>
                     <input
@@ -510,7 +565,7 @@ const SentinelDashboard: NextPage = () => {
                     />
                   </div>
 
-                  <div className="form-control">
+                  <div className="form-control md:col-span-2">
                     <label className="label">
                       <span className="label-text text-gray-400 text-lg flex items-center gap-3">
                         Requires Approval
@@ -525,7 +580,11 @@ const SentinelDashboard: NextPage = () => {
                   </div>
                 </div>
 
-                <button className="btn bg-orange-500 hover:bg-orange-600 border-none text-white text-xl px-12 py-4 mt-8" onClick={handleCreatePolicy}>
+                <button 
+                  className="btn bg-orange-500 hover:bg-orange-600 border-none text-white text-xl px-12 py-4 mt-8"
+                  onClick={handleCreatePolicy}
+                  disabled={recipientChips.length === 0}
+                >
                   Create Policy →
                 </button>
               </div>
@@ -572,6 +631,20 @@ const PoliciesTable = ({ policyCount, isOwner }: { policyCount: number; isOwner:
         </tbody>
       </table>
     </div>
+  );
+};
+
+// Recipient Display Component with ENS lookup
+const RecipientDisplay = ({ address }: { address: string }) => {
+  const { data: ensName } = useEnsName({
+    address: address as `0x${string}`,
+    chainId: mainnet.id,
+  });
+
+  return (
+    <span className="font-mono text-xs">
+      {ensName || `${address.slice(0, 6)}...${address.slice(-4)}`}
+    </span>
   );
 };
 
@@ -649,9 +722,7 @@ const PolicyRow = ({ policyId, isOwner }: { policyId: number; isOwner: boolean }
         {recipients && recipients.length > 0 ? (
           <div className="flex flex-col gap-1">
             {recipients.map((recipient: string, idx: number) => (
-              <span key={idx} className="font-mono text-xs">
-                {recipient.slice(0, 6)}...{recipient.slice(-4)}
-              </span>
+              <RecipientDisplay key={idx} address={recipient} />
             ))}
           </div>
         ) : (
