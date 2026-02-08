@@ -193,12 +193,14 @@ const Home: NextPage = () => {
             >
               Open Live Dashboard →
             </Link>
-            <Link
-              href="/docs"
+            <a
+              href="https://github.com/vilmapato/SentinelDAO/blob/main/docs/architecture.md"
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn btn-lg btn-outline border-2 border-gray-700 hover:border-orange-500 text-gray-300 px-12 py-6 text-2xl"
             >
               View Architecture
-            </Link>
+            </a>
           </div>
 
           <div className="mt-16 p-10 border-2 border-gray-800 rounded-lg space-y-5 font-mono text-xl">
