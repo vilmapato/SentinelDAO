@@ -265,7 +265,7 @@ const SentinelDashboard: NextPage = () => {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Mint USDC */}
               <div className="p-8 border-2 border-gray-800 rounded-lg">
-                <h3 className="text-2xl font-bold mb-6 text-orange-500">MINT_USDC</h3>
+                <h3 className="text-3xl font-bold mb-6 text-orange-500">Mint USDC</h3>
                 <p className="text-gray-400 mb-6 text-lg">For local development only</p>
                 <div className="flex gap-4">
                   <input
@@ -283,7 +283,7 @@ const SentinelDashboard: NextPage = () => {
 
               {/* Fund Treasury */}
               <div className="p-8 border-2 border-gray-800 rounded-lg">
-                <h3 className="text-2xl font-bold mb-6 text-orange-500">FUND_TREASURY</h3>
+                <h3 className="text-3xl font-bold mb-6 text-orange-500">Fund Treasury</h3>
                 <p className="text-gray-400 mb-6 text-lg">Deposit USDC into the vault</p>
                 <div className="flex gap-4">
                   <input
@@ -306,7 +306,7 @@ const SentinelDashboard: NextPage = () => {
 
             {/* Contract Info */}
             <div className="p-8 border-2 border-gray-800 rounded-lg font-mono">
-              <h3 className="text-2xl font-bold mb-6 text-orange-500">CONTRACT_INFO</h3>
+              <h3 className="text-3xl font-bold mb-6 text-orange-500">Contract Info</h3>
               <div className="space-y-3 text-lg">
                 <div className="flex justify-between">
                   <span className="text-gray-500">USDC:</span>
@@ -325,7 +325,7 @@ const SentinelDashboard: NextPage = () => {
 
             {/* Event Logs */}
             <div className="p-8 border-2 border-gray-800 rounded-lg">
-              <h3 className="text-3xl font-bold mb-8 text-orange-500">EVENT_LOGS</h3>
+              <h3 className="text-3xl font-bold mb-8 text-orange-500">Transaction History</h3>
               <div className="overflow-x-auto">
                 <table className="table w-full">
                   <thead>
@@ -401,7 +401,7 @@ const SentinelDashboard: NextPage = () => {
             {/* Create Policy Form */}
             {isOwner && (
               <div className="p-8 border-2 border-orange-500/30 rounded-lg bg-orange-500/5">
-                <h3 className="text-3xl font-bold mb-8 text-orange-500">CREATE_POLICY</h3>
+                <h3 className="text-3xl font-bold mb-8 text-orange-500">Create Policy</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="form-control">
                     <label className="label">
@@ -533,7 +533,7 @@ const SentinelDashboard: NextPage = () => {
 
             {/* Policies Table */}
             <div className="p-8 border-2 border-gray-800 rounded-lg">
-              <h3 className="text-3xl font-bold mb-8 text-orange-500">ACTIVE_POLICIES</h3>
+              <h3 className="text-3xl font-bold mb-8 text-orange-500">Active Policies</h3>
               <PoliciesTable policyCount={Number(policyCount || 0)} isOwner={!!isOwner} />
             </div>
           </div>

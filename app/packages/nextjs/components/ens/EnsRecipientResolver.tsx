@@ -109,7 +109,7 @@ export const EnsRecipientResolver = ({ onAddRecipient, connectedAddress }: EnsRe
 
   return (
     <div className="p-8 border-2 border-orange-500/30 rounded-lg bg-orange-500/5 mb-8">
-      <h3 className="text-3xl font-bold mb-6 text-orange-500">ENS_RECIPIENT_RESOLVER</h3>
+      <h3 className="text-3xl font-bold mb-6 text-orange-500">ENS Recipient Resolver</h3>
 
       {/* Connected ENS Helper */}
       {connectedAddress && connectedEnsName && (
