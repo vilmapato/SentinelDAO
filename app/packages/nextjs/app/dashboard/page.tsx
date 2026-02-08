@@ -265,7 +265,7 @@ const SentinelDashboard: NextPage = () => {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Mint USDC */}
               <div className="p-8 border-2 border-gray-800 rounded-lg">
-                <h3 className="text-2xl font-bold mb-6 text-orange-500">// MINT_USDC</h3>
+                <h3 className="text-2xl font-bold mb-6 text-orange-500">MINT_USDC</h3>
                 <p className="text-gray-400 mb-6 text-lg">For local development only</p>
                 <div className="flex gap-4">
                   <input
@@ -283,7 +283,7 @@ const SentinelDashboard: NextPage = () => {
 
               {/* Fund Treasury */}
               <div className="p-8 border-2 border-gray-800 rounded-lg">
-                <h3 className="text-2xl font-bold mb-6 text-orange-500">// FUND_TREASURY</h3>
+                <h3 className="text-2xl font-bold mb-6 text-orange-500">FUND_TREASURY</h3>
                 <p className="text-gray-400 mb-6 text-lg">Deposit USDC into the vault</p>
                 <div className="flex gap-4">
                   <input
@@ -306,7 +306,7 @@ const SentinelDashboard: NextPage = () => {
 
             {/* Contract Info */}
             <div className="p-8 border-2 border-gray-800 rounded-lg font-mono">
-              <h3 className="text-2xl font-bold mb-6 text-orange-500">// CONTRACT_INFO</h3>
+              <h3 className="text-2xl font-bold mb-6 text-orange-500">CONTRACT_INFO</h3>
               <div className="space-y-3 text-lg">
                 <div className="flex justify-between">
                   <span className="text-gray-500">USDC:</span>
@@ -325,7 +325,7 @@ const SentinelDashboard: NextPage = () => {
 
             {/* Event Logs */}
             <div className="p-8 border-2 border-gray-800 rounded-lg">
-              <h3 className="text-3xl font-bold mb-8 text-orange-500">// EVENT_LOGS</h3>
+              <h3 className="text-3xl font-bold mb-8 text-orange-500">EVENT_LOGS</h3>
               <div className="overflow-x-auto">
                 <table className="table w-full">
                   <thead>
@@ -401,7 +401,7 @@ const SentinelDashboard: NextPage = () => {
             {/* Create Policy Form */}
             {isOwner && (
               <div className="p-8 border-2 border-orange-500/30 rounded-lg bg-orange-500/5">
-                <h3 className="text-3xl font-bold mb-8 text-orange-500">// CREATE_POLICY</h3>
+                <h3 className="text-3xl font-bold mb-8 text-orange-500">CREATE_POLICY</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="form-control">
                     <label className="label">
@@ -445,27 +445,55 @@ const SentinelDashboard: NextPage = () => {
 
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text text-gray-400 text-lg">Interval (seconds, 0 = one-off)</span>
+                      <span className="label-text text-gray-400 text-lg flex items-center gap-2">
+                        Interval
+                        <div className="tooltip tooltip-right" data-tip="Set recurring payment interval: 0 = one-time payment, 60 = every minute, 3600 = hourly, 86400 = daily, 2592000 = monthly, 31536000 = yearly">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current text-orange-500 cursor-help">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        </div>
+                      </span>
                     </label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      className="input input-bordered bg-black border-gray-700 text-white text-lg"
-                      value={intervalSeconds}
-                      onChange={e => setIntervalSeconds(e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        placeholder="0"
+                        className="input input-bordered bg-black border-gray-700 text-white text-lg flex-grow"
+                        value={intervalSeconds}
+                        onChange={e => setIntervalSeconds(e.target.value)}
+                      />
+                      <select
+                        className="select select-bordered bg-black border-gray-700 text-white text-lg"
+                        onChange={e => {
+                          const multiplier = e.target.value;
+                          if (multiplier !== "custom") {
+                            setIntervalSeconds(multiplier);
+                          }
+                        }}
+                      >
+                        <option value="custom">seconds</option>
+                        <option value="0">one-off</option>
+                        <option value="60">minute</option>
+                        <option value="3600">hour</option>
+                        <option value="86400">day</option>
+                        <option value="604800">week</option>
+                        <option value="2592000">month</option>
+                        <option value="31536000">year</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text text-gray-400 text-lg">Start Time (Unix timestamp)</span>
+                      <span className="label-text text-gray-400 text-lg">Start Time</span>
                     </label>
                     <input
-                      type="number"
-                      placeholder="Unix timestamp"
+                      type="datetime-local"
                       className="input input-bordered bg-black border-gray-700 text-white text-lg"
-                      value={startTime}
-                      onChange={e => setStartTime(e.target.value)}
+                      onChange={e => {
+                        const date = new Date(e.target.value);
+                        setStartTime(Math.floor(date.getTime() / 1000).toString());
+                      }}
                     />
                   </div>
 
@@ -482,14 +510,18 @@ const SentinelDashboard: NextPage = () => {
                     />
                   </div>
 
-                  <div className="form-control flex flex-row items-center justify-between">
-                    <span className="label-text text-gray-400 text-lg">Requires Approval</span>
-                    <input
-                      type="checkbox"
-                      className="toggle toggle-lg toggle-orange"
-                      checked={requiresApproval}
-                      onChange={e => setRequiresApproval(e.target.checked)}
-                    />
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text text-gray-400 text-lg flex items-center gap-3">
+                        Requires Approval
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-lg toggle-orange"
+                          checked={requiresApproval}
+                          onChange={e => setRequiresApproval(e.target.checked)}
+                        />
+                      </span>
+                    </label>
                   </div>
                 </div>
 
@@ -501,7 +533,7 @@ const SentinelDashboard: NextPage = () => {
 
             {/* Policies Table */}
             <div className="p-8 border-2 border-gray-800 rounded-lg">
-              <h3 className="text-3xl font-bold mb-8 text-orange-500">// ACTIVE_POLICIES</h3>
+              <h3 className="text-3xl font-bold mb-8 text-orange-500">ACTIVE_POLICIES</h3>
               <PoliciesTable policyCount={Number(policyCount || 0)} isOwner={!!isOwner} />
             </div>
           </div>
@@ -525,6 +557,7 @@ const PoliciesTable = ({ policyCount, isOwner }: { policyCount: number; isOwner:
             <th>ID</th>
             <th>Enabled</th>
             <th>Approval</th>
+            <th>Recipients</th>
             <th>Next Execution</th>
             <th>Interval</th>
             <th>Executions</th>
@@ -560,7 +593,7 @@ const PolicyRow = ({ policyId, isOwner }: { policyId: number; isOwner: boolean }
     contractName: "TreasuryVault",
   });
 
-  const [enabled, requiresApproval, approved, intervalSeconds, nextExecutionTime, maxPerExecution, executions] =
+  const [enabled, requiresApproval, approved, intervalSeconds, nextExecutionTime, maxPerExecution, executions, lastExecutedAt, recipients, amounts] =
     policyData || [];
 
   const handleToggleEnabled = async () => {
@@ -588,7 +621,7 @@ const PolicyRow = ({ policyId, isOwner }: { policyId: number; isOwner: boolean }
   if (!policyData) {
     return (
       <tr>
-        <td colSpan={8} className="text-center text-gray-500">
+        <td colSpan={9} className="text-center text-gray-500">
           Loading...
         </td>
       </tr>
@@ -610,6 +643,19 @@ const PolicyRow = ({ policyId, isOwner }: { policyId: number; isOwner: boolean }
           </span>
         ) : (
           <span className="badge bg-gray-800 text-gray-500 border-gray-700 text-sm px-3 py-2">N/A</span>
+        )}
+      </td>
+      <td className="text-sm text-gray-400">
+        {recipients && recipients.length > 0 ? (
+          <div className="flex flex-col gap-1">
+            {recipients.map((recipient: string, idx: number) => (
+              <span key={idx} className="font-mono text-xs">
+                {recipient.slice(0, 6)}...{recipient.slice(-4)}
+              </span>
+            ))}
+          </div>
+        ) : (
+          "-"
         )}
       </td>
       <td className="text-sm text-gray-400 font-mono">
