@@ -226,6 +226,9 @@ const SentinelDashboard: NextPage = () => {
         args: [recipientsArray, amountsArray, BigInt(intervalSeconds), BigInt(startTime), maxPer, requiresApproval],
       });
 
+      console.log("✅ Policy created successfully!");
+      alert("✅ Policy created successfully! Scroll down to see it in the Active Policies table.");
+
       // Reset form
       setRecipientChips([]);
       setRecipients("");
@@ -236,7 +239,7 @@ const SentinelDashboard: NextPage = () => {
       setRequiresApproval(false);
     } catch (error) {
       console.error("Error creating policy:", error);
-      alert("Error creating policy. Check console for details.");
+      alert("❌ Error creating policy. Check console for details.");
     }
   };
 
