@@ -177,17 +177,49 @@ const SentinelDashboard: NextPage = () => {
 
     // Check if it's a valid Ethereum address
     if (trimmedInput.match(/^0x[a-fA-F0-9]{40}$/)) {
+      console.log("Adding recipient:", trimmedInput);
       addRecipient(trimmedInput as `0x${string}`);
       setRecipients(""); // Clear input
+    } else {
+      console.error("Invalid Ethereum address format");
+      alert("Please enter a valid Ethereum address (0x followed by 40 hexadecimal characters)");
     }
   };
 
   const handleCreatePolicy = async () => {
     try {
+      // Validation
+      if (recipientChips.length === 0) {
+        console.error("No recipients added");
+        return;
+      }
+
+      if (!amounts.trim()) {
+        console.error("No amounts specified");
+        return;
+      }
+
       const recipientsArray = recipientChips.map(chip => chip.address);
       const amountsArray = amounts.split(",").map(a => parseUnits(a.trim(), 6));
+
+      // Validate amounts match recipients
+      if (amountsArray.length !== recipientsArray.length) {
+        console.error("Number of amounts must match number of recipients");
+        alert(`Please enter ${recipientsArray.length} amount(s) to match the ${recipientsArray.length} recipient(s)`);
+        return;
+      }
+
       const totalAmount = amountsArray.reduce((acc, curr) => acc + curr, 0n);
       const maxPer = maxPerExecution ? parseUnits(maxPerExecution, 6) : totalAmount;
+
+      console.log("Creating policy with:", {
+        recipients: recipientsArray,
+        amounts: amountsArray,
+        intervalSeconds,
+        startTime,
+        maxPer,
+        requiresApproval
+      });
 
       await writeVault({
         functionName: "createPolicy",
@@ -204,6 +236,7 @@ const SentinelDashboard: NextPage = () => {
       setRequiresApproval(false);
     } catch (error) {
       console.error("Error creating policy:", error);
+      alert("Error creating policy. Check console for details.");
     }
   };
 
@@ -581,12 +614,16 @@ const SentinelDashboard: NextPage = () => {
                 </div>
 
                 <button 
-                  className="btn bg-orange-500 hover:bg-orange-600 border-none text-white text-xl px-12 py-4 mt-8"
+                  className="btn bg-orange-500 hover:bg-orange-600 border-none text-white text-xl px-12 py-4 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleCreatePolicy}
-                  disabled={recipientChips.length === 0}
+                  disabled={recipientChips.length === 0 || !amounts.trim()}
+                  title={recipientChips.length === 0 ? "Add at least one recipient" : !amounts.trim() ? "Enter amounts" : ""}
                 >
                   Create Policy →
                 </button>
+                {recipientChips.length === 0 && (
+                  <p className="text-sm text-gray-500 mt-2">Add at least one recipient to create a policy</p>
+                )}
               </div>
             )}
 
