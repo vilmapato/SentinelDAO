@@ -461,12 +461,15 @@ const SentinelDashboard: NextPage = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                       </div>
+                      {recipientChips.length > 0 && (
+                        <span className="ml-2 text-sm text-orange-500">({recipientChips.length} added)</span>
+                      )}
                     </span>
                   </label>
                   
                   {/* Recipient Chips Display */}
-                  {recipientChips.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4 p-4 bg-black border border-gray-700 rounded">
+                  {recipientChips.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mb-4 p-4 bg-black border border-orange-500/30 rounded">
                       {recipientChips.map((chip, idx) => (
                         <div
                           key={idx}
@@ -484,29 +487,38 @@ const SentinelDashboard: NextPage = () => {
                         </div>
                       ))}
                     </div>
+                  ) : (
+                    <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded">
+                      <p className="text-yellow-500 text-sm">⚠️ No recipients added yet. Add addresses below or use ENS resolver above.</p>
+                    </div>
                   )}
                   
                   {/* Manual Address Input */}
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="0x123..."
+                      placeholder="0x123... (press Enter or click Add)"
                       className="input input-bordered bg-black border-gray-700 text-white text-lg flex-grow"
                       value={recipients}
                       onChange={e => setRecipients(e.target.value)}
                       onKeyPress={e => {
                         if (e.key === 'Enter') {
+                          e.preventDefault();
                           handleAddRecipientFromInput();
                         }
                       }}
                     />
                     <button
                       onClick={handleAddRecipientFromInput}
-                      className="btn bg-gray-700 hover:bg-gray-600 border-none text-white"
+                      className="btn bg-orange-500 hover:bg-orange-600 border-none text-white font-bold"
+                      disabled={!recipients.trim()}
                     >
                       Add
                     </button>
                   </div>
+                  {recipients.trim() && !recipients.match(/^0x[a-fA-F0-9]{40}$/) && (
+                    <p className="text-sm text-yellow-500 mt-2">⚠️ Address must start with 0x followed by 40 hexadecimal characters</p>
+                  )}
                 </div>
 
                 {/* Rest of Form in 2 Columns */}
@@ -617,12 +629,19 @@ const SentinelDashboard: NextPage = () => {
                   className="btn bg-orange-500 hover:bg-orange-600 border-none text-white text-xl px-12 py-4 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleCreatePolicy}
                   disabled={recipientChips.length === 0 || !amounts.trim()}
-                  title={recipientChips.length === 0 ? "Add at least one recipient" : !amounts.trim() ? "Enter amounts" : ""}
+                  title={recipientChips.length === 0 ? "Click 'Add' to add recipients first" : !amounts.trim() ? "Enter amounts" : ""}
                 >
                   Create Policy →
                 </button>
                 {recipientChips.length === 0 && (
-                  <p className="text-sm text-gray-500 mt-2">Add at least one recipient to create a policy</p>
+                  <p className="text-sm text-orange-400 mt-2 font-semibold">
+                    👆 Click the orange "Add" button above to add your recipient address first
+                  </p>
+                )}
+                {recipientChips.length > 0 && !amounts.trim() && (
+                  <p className="text-sm text-orange-400 mt-2 font-semibold">
+                    👆 Enter amounts (USDC) to continue
+                  </p>
                 )}
               </div>
             )}
