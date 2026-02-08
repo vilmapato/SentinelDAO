@@ -245,6 +245,14 @@ const SentinelDashboard: NextPage = () => {
 
   const isOwner = connectedAddress && owner && connectedAddress.toLowerCase() === owner.toLowerCase();
 
+  // Debug logging
+  useEffect(() => {
+    console.log("🔍 Dashboard Debug Info:");
+    console.log("Connected Address:", connectedAddress);
+    console.log("Contract Owner:", owner);
+    console.log("Is Owner:", isOwner);
+  }, [connectedAddress, owner, isOwner]);
+
   return (
     <div className="min-h-screen bg-black text-white py-12 px-4 sm:px-8">
       <div className="max-w-7xl mx-auto">
@@ -441,6 +449,31 @@ const SentinelDashboard: NextPage = () => {
 
         {activeTab === "policies" && (
           <div className="space-y-12">
+            {/* Owner Check Warning */}
+            {!isOwner && connectedAddress && (
+              <div className="p-8 border-2 border-yellow-500/30 rounded-lg bg-yellow-500/5">
+                <h3 className="text-2xl font-bold mb-4 text-yellow-500">⚠️ Not Contract Owner</h3>
+                <p className="text-gray-300 text-lg mb-4">
+                  You are connected as: <span className="font-mono text-orange-500">{connectedAddress}</span>
+                </p>
+                <p className="text-gray-300 text-lg mb-4">
+                  Contract owner is: <span className="font-mono text-orange-500">{owner || "Loading..."}</span>
+                </p>
+                <p className="text-gray-400">
+                  Only the contract owner can create and manage policies. You can view existing policies below.
+                </p>
+              </div>
+            )}
+
+            {!connectedAddress && (
+              <div className="p-8 border-2 border-orange-500/30 rounded-lg bg-orange-500/5">
+                <h3 className="text-2xl font-bold mb-4 text-orange-500">🔌 Connect Wallet</h3>
+                <p className="text-gray-300 text-lg">
+                  Please connect your wallet to create and manage policies.
+                </p>
+              </div>
+            )}
+
             {/* ENS Recipient Resolver */}
             {isOwner && (
               <EnsRecipientResolver 
